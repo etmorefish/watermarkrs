@@ -1,5 +1,5 @@
 [package]
-name = "eframe_template"
+name = "watermarkrs"
 version = "0.1.0"
 authors = ["Emil Ernerfeldt <emil.ernerfeldt@gmail.com>"]
 edition = "2024"
@@ -15,6 +15,8 @@ targets = ["x86_64-unknown-linux-gnu", "wasm32-unknown-unknown"]
 egui = "0.34.0"
 eframe = { version = "0.34.0", features = ["persistence"] }
 log = "0.4.27"
+image = "0.25.3"
+rayon = "1.10.0"
 
 # You only need serde if you want app persistence:
 serde = { version = "1.0.219", features = ["derive"] }
@@ -22,11 +24,26 @@ serde = { version = "1.0.219", features = ["derive"] }
 # native:
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 env_logger = "0.11.8"
+rfd = "0.14.1"
 
 # web:
 [target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "0.2.91"
 wasm-bindgen-futures = "0.4.50"
-web-sys = "0.3.70"              # to access the DOM (to hide the loading text)
+web-sys = { version = "0.3.70", features = [
+    "File", 
+    "FileList", 
+    "HtmlInputElement",
+    "FileReader",
+    "Blob",
+    "Url",
+    "HtmlAnchorElement",
+    "Window",
+    "Document",
+    "Element",
+    "HtmlElement"
+] }
+js-sys = "0.3.70"
 
 [profile.release]
 opt-level = 2 # fast and small wasm

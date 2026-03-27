@@ -8,8 +8,8 @@ fn main() -> eframe::Result {
 
     let native_options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
-            .with_inner_size([400.0, 300.0])
-            .with_min_inner_size([300.0, 220.0])
+            .with_inner_size([800.0, 600.0])
+            .with_min_inner_size([600.0, 400.0])
             .with_icon(
                 // NOTE: Adding an icon is optional
                 eframe::icon_data::from_png_bytes(
@@ -20,9 +20,39 @@ fn main() -> eframe::Result {
         ..Default::default()
     };
     eframe::run_native(
-        "eframe template",
+        "图片水印工具",
         native_options,
-        Box::new(|cc| Ok(Box::new(eframe_template::TemplateApp::new(cc)))),
+        Box::new(|cc| {
+            // 添加中文字体
+            let mut fonts = egui::FontDefinitions::default();
+            
+            // 尝试加载SimHei字体
+            if let Ok(font_data) = std::fs::read("SimHei.ttf") {
+                fonts.font_data.insert(
+                    "simhei".to_owned(),
+                    std::sync::Arc::new(egui::FontData::from_owned(font_data)),
+                );
+                
+                // 设置字体族
+                fonts
+                    .families
+                    .entry(egui::FontFamily::Proportional)
+                    .or_default()
+                    .insert(0, "simhei".to_owned());
+                    
+                fonts
+                    .families
+                    .entry(egui::FontFamily::Monospace)
+                    .or_default()
+                    .push("simhei".to_owned());
+                    
+                cc.egui_ctx.set_fonts(fonts);
+            } else {
+                log::warn!("无法加载SimHei.ttf字体文件，将使用默认字体");
+            }
+            
+            Ok(Box::new(watermarkrs::WatermarkApp::new(cc)))
+        }),
     )
 }
 
@@ -52,7 +82,51 @@ fn main() {
             .start(
                 canvas,
                 web_options,
-                Box::new(|cc| Ok(Box::new(eframe_template::TemplateApp::new(cc)))),
+                Box::new(|cc| {
+                    // 添加中文字体（Web版本）
+                    let mut fonts = egui::FontDefinitions::default();
+                    
+                    // 对于Web版本，我们可以使用系统字体或嵌入字体
+                    // 这里我们添加一个中文字体作为后备
+                    fonts
+                        .families
+                        .entry(egui::FontFamily::Proportional)
+                        .or_default()
+                        .insert(0, "Microsoft YaHei".to_owned());
+                        
+                    fonts
+                        .families
+                        .entry(egui::FontFamily::Monospace)
+                        .or_default()
+                        .push("Microsoft YaHei".to_owned());
+                    
+                    // 添加更多中文字体作为后备
+                    let chinese_fonts = vec![
+                        "Microsoft YaHei",
+                        "SimHei",
+                        "NSimSun",
+                        "FangSong",
+                        "KaiTi",
+                        "STHeiti",
+                        "STKaiti",
+                        "STSong",
+                        "STFangsong",
+                        "Arial Unicode MS",
+                        "sans-serif",
+                    ];
+                    
+                    for font in chinese_fonts {
+                        fonts
+                            .families
+                            .entry(egui::FontFamily::Proportional)
+                            .or_default()
+                            .push(font.to_owned());
+                    }
+                    
+                    cc.egui_ctx.set_fonts(fonts);
+                    
+                    Ok(Box::new(watermarkrs::WatermarkApp::new(cc)))
+                }),
             )
             .await;
 
